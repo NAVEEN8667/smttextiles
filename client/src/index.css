@@ -1,0 +1,92 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand-primary: #064e3b;
+  --color-brand-accent: #b45309;
+  --color-brand-bg: #fffcf5;
+
+  --font-playfair: "Playfair Display", serif;
+  --font-poppins: "Poppins", sans-serif;
+
+  --shadow-brand-focus: 0 4px 12px rgba(180, 83, 9, 0.05);
+
+  --animate-fade-in-up: fadeInUp 0.6s ease forwards;
+  --animate-fade-out-down: fadeOutDown 0.6s ease forwards;
+  --animate-slide-in-up: slideInUp 0.5s ease forwards;
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeOutDown {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer base {
+  body {
+    @apply antialiased text-brand-primary bg-brand-bg font-poppins;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-serif {
+    @apply font-playfair;
+  }
+}
+
+@layer components {
+  .submit-button {
+    @apply relative w-full h-[52px] bg-brand-primary text-white rounded-sm cursor-pointer text-xs font-bold uppercase tracking-widest border-none overflow-hidden z-[1] flex items-center justify-center transition-all hover:bg-brand-primary/95 shadow-md active:scale-[0.98];
+  }
+
+  .field-wrapper {
+    @apply relative w-full mb-6;
+  }
+
+  .field-wrapper label {
+    @apply block text-[10px] uppercase tracking-widest font-bold text-brand-primary/60 mb-2 ml-1;
+  }
+
+  .field-wrapper input,
+  .field-wrapper textarea {
+    @apply w-full px-4 py-3 bg-white border border-gray-100 rounded-sm text-sm text-gray-900 outline-none transition-all duration-300 placeholder:text-gray-300;
+  }
+
+  .field-wrapper input:focus,
+  .field-wrapper textarea:focus {
+    @apply border-brand-accent/50 ring-0 shadow-brand-focus;
+  }
+}
