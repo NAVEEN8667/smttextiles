@@ -21,6 +21,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    console.log(`Register request received for email: ${email}`);
 
     const userCheck = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
     if (userCheck.rows.length > 0) {
@@ -33,39 +34,48 @@ router.post('/register', async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const bcryptPassword = await bcrypt.hash(password, salt);
-    const otp = generateOTP();
-    const otpSecret = otp;
 
-
-
-
-
+    // Save user record first, then generate/store OTP.
     if (userCheck.rows.length > 0) {
 
       await pool.query(
-        'UPDATE users SET name = $1, password_hash = $2, otp_secret = $3, phone_number = $4 WHERE email = $5',
-        [name, bcryptPassword, otpSecret, phoneNumber, email]
+        'UPDATE users SET name = $1, password_hash = $2, otp_secret = NULL, phone_number = $3 WHERE email = $4',
+        [name, bcryptPassword, phoneNumber, email]
       );
+      console.log(`Updated existing unverified user for email: ${email}`);
     } else {
 
       await pool.query(
-        'INSERT INTO users (name, email, password_hash, otp_secret, is_verified, phone_number) VALUES ($1, $2, $3, $4, FALSE, $5)',
-        [name, email, bcryptPassword, otpSecret, phoneNumber]
+        'INSERT INTO users (name, email, password_hash, otp_secret, is_verified, phone_number) VALUES ($1, $2, $3, NULL, FALSE, $4)',
+        [name, email, bcryptPassword, phoneNumber]
       );
+      console.log(`Created new user for email: ${email}`);
     }
 
+    const otp = generateOTP();
+    await pool.query('UPDATE users SET otp_secret = $1 WHERE email = $2', [otp, email]);
+    console.log(`OTP generated and stored for email: ${email}`);
 
     const otpResult = await sendOTP(email, otp);
     if (!otpResult.ok) {
-      return res.status(503).json({
-        message: otpResult.error || 'OTP email service is unavailable. Please try again.'
+      console.error(`OTP email delivery failed for ${email}: ${otpResult.error}`);
+      return res.status(200).json({
+        success: true,
+        message: 'User registered. OTP generated.',
+        emailSent: false,
       });
     }
 
-    res.json({ message: 'OTP sent to your email. Please verify.' });
+    console.log(`Registration flow completed successfully for email: ${email}`);
+
+    return res.status(200).json({
+      success: true,
+      message: 'User registered. OTP generated.',
+      emailSent: true,
+    });
 
   } catch (err) {
-    console.error(err.message);
+    console.error('Registration route error:', err.message);
     res.status(500).send('Server Error');
   }
 });
