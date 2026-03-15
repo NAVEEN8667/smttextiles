@@ -8,6 +8,9 @@ const { generateInvoicePDF } = require('../utils/pdfGenerator');
 const { sendInvoiceEmail } = require('../utils/emailService');
 const { generateOrderId } = require('../utils/generateOrderId');
 
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+const isTestModeKey = typeof process.env.RAZORPAY_KEY_ID === 'string' && process.env.RAZORPAY_KEY_ID.startsWith('rzp_test_');
+
 async function isOrdersIdInteger(client) {
   const result = await client.query(
     `SELECT data_type
@@ -28,8 +31,12 @@ if (
 ) {
   console.error(
     ' RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are not set in .env. ' +
-    'Get your test keys from https://dashboard.razorpay.com → Settings → API Keys'
+    'Get your live keys from https://dashboard.razorpay.com → Account & Settings → API Keys'
   );
+}
+
+if (isProduction && isTestModeKey) {
+  console.error('Razorpay is configured with test keys in production. Replace rzp_test_* with live rzp_live_* keys.');
 }
 
 const razorpay = new Razorpay({
@@ -48,7 +55,13 @@ router.post('/create-order', auth, async (req, res) => {
   ) {
     return res.status(503).json({
       message:
-        'Payment gateway not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in server/.env (get test keys from dashboard.razorpay.com)',
+        'Payment gateway not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET with Razorpay live keys.',
+    });
+  }
+
+  if (isProduction && isTestModeKey) {
+    return res.status(503).json({
+      message: 'Razorpay is still in test mode. Replace rzp_test_* credentials with live rzp_live_* credentials in production.',
     });
   }
 
