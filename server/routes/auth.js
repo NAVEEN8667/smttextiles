@@ -61,17 +61,17 @@ router.post('/register', async (req, res) => {
       console.error(`OTP email delivery failed for ${email}: ${otpResult.error}`);
       return res.status(200).json({
         success: true,
-        message: 'User registered. OTP generated.',
-        emailSent: false,
+        message: 'User registered successfully',
+        email,
       });
     }
 
-    console.log(`Registration flow completed successfully for email: ${email}`);
+    console.log(`OTP email sent and registration flow completed for email: ${email}`);
 
     return res.status(200).json({
       success: true,
-      message: 'User registered. OTP generated.',
-      emailSent: true,
+      message: 'User registered successfully',
+      email,
     });
 
   } catch (err) {
