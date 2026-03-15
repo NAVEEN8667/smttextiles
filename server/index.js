@@ -4,8 +4,17 @@ const app = express();
 require('dotenv').config();
 const pool = require('./db');
 
-const requiredEnv = ['DATABASE_URL', 'JWT_SECRET', 'EMAIL_USER', 'EMAIL_PASS'];
+const requiredEnv = ['DATABASE_URL', 'JWT_SECRET'];
 const missingEnv = requiredEnv.filter((name) => !process.env[name]);
+
+if (!process.env.RESEND_API_KEY) {
+  missingEnv.push('RESEND_API_KEY');
+}
+
+if (!process.env.EMAIL_FROM && !process.env.EMAIL_USER) {
+  missingEnv.push('EMAIL_FROM or EMAIL_USER');
+}
+
 if (missingEnv.length > 0) {
   console.warn(`Missing environment variables: ${missingEnv.join(', ')}`);
 }

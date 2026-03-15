@@ -1,31 +1,82 @@
-const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+const hasResendConfig = Boolean(process.env.RESEND_API_KEY);
 
-const sendOTP = async (email, otp) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.error('EMAIL_USER or EMAIL_PASS is not configured');
+async function sendViaResend({ to, subject, text, html, attachments }) {
+  const fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+
+  if (!fromEmail) {
     return {
       ok: false,
-      error: 'Missing EMAIL_USER or EMAIL_PASS environment variable',
+      error: 'Missing EMAIL_FROM or EMAIL_USER for sender address',
+    };
+  }
+
+  const resendPayload = {
+    from: fromEmail,
+    to: [to],
+    subject,
+    text,
+    html,
+  };
+
+  if (attachments && attachments.length > 0) {
+    resendPayload.attachments = attachments.map((item) => ({
+      filename: item.filename,
+      content: Buffer.isBuffer(item.content) ? item.content.toString('base64') : item.content,
+      type: item.contentType,
+      disposition: 'attachment',
+    }));
+  }
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(resendPayload),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      return {
+        ok: false,
+        error: `Resend API error (${response.status}): ${body}`,
+      };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err.message || 'Resend API request failed',
+    };
+  }
+}
+
+async function sendEmail(mailOptions) {
+  return sendViaResend({
+    to: mailOptions.to,
+    subject: mailOptions.subject,
+    text: mailOptions.text,
+    html: mailOptions.html,
+    attachments: mailOptions.attachments,
+  });
+}
+
+const sendOTP = async (email, otp) => {
+  if (!hasResendConfig) {
+    console.error('RESEND_API_KEY is not configured');
+    return {
+      ok: false,
+      error: 'Missing RESEND_API_KEY environment variable',
     };
   }
 
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
     to: email,
     subject: 'Your Verification Code - Textile E-commerce',
     text: `Your OTP for verification is: ${otp}. It is valid for 10 minutes.`,
@@ -40,17 +91,15 @@ const sendOTP = async (email, otp) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`OTP email sent successfully to ${email}`);
+    const result = await sendEmail(mailOptions);
+    if (!result.ok) {
+      console.error(`Error sending OTP email to ${email}: ${result.error}`);
+      return result;
+    }
+    console.log(`OTP email sent successfully to ${email} via resend`);
     return { ok: true };
   } catch (error) {
-    console.error('Error sending OTP email:', {
-      message: error.message,
-      code: error.code,
-      command: error.command,
-      response: error.response,
-      responseCode: error.responseCode,
-    });
+    console.error('Unexpected error sending OTP email:', error.message);
     return {
       ok: false,
       error: error.message || 'Failed to send OTP email',
@@ -60,7 +109,7 @@ const sendOTP = async (email, otp) => {
 
 const sendInvoiceEmail = async (email, pdfBuffer, orderId) => {
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
     to: email,
     subject: `Your Invoice for Order #${orderId} - Textile E-commerce`,
     text: `Thank you for your order! Please find attached the invoice for your order #${orderId}.`,
@@ -84,8 +133,12 @@ const sendInvoiceEmail = async (email, pdfBuffer, orderId) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Invoice email sent to ${email} for order ${orderId}`);
+    const result = await sendEmail(mailOptions);
+    if (!result.ok) {
+      console.error(`Invoice email failed for ${email}: ${result.error}`);
+      return false;
+    }
+    console.log(`Invoice email sent to ${email} for order ${orderId} via resend`);
     return true;
   } catch (error) {
     console.error('Error sending invoice email:', error);
@@ -97,7 +150,7 @@ const sendOrderStatusEmail = async (email, order) => {
   const statusDisplay = order.status.charAt(0).toUpperCase() + order.status.slice(1).replace('_', ' ');
 
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
     to: email,
     subject: `Order Update: #${order.id} - ${statusDisplay}`,
     text: `The status of your order #${order.id} is now: ${statusDisplay}.`,
@@ -115,8 +168,12 @@ const sendOrderStatusEmail = async (email, order) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Order status email sent to ${email} for order ${order.id} (Status: ${order.status})`);
+    const result = await sendEmail(mailOptions);
+    if (!result.ok) {
+      console.error(`Order status email failed for ${email}: ${result.error}`);
+      return false;
+    }
+    console.log(`Order status email sent to ${email} for order ${order.id} (Status: ${order.status}) via resend`);
     return true;
   } catch (error) {
     console.error('Error sending order status email:', error);
