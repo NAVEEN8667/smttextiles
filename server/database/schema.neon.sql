@@ -1,13 +1,9 @@
-CREATE DATABASE textile_db;
-
-\c textile_db;
-
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'customer', -- 'customer', 'admin'
+    role VARCHAR(50) DEFAULT 'customer',
     is_verified BOOLEAN DEFAULT FALSE,
     otp_secret VARCHAR(255),
     phone_number VARCHAR(20),
@@ -60,11 +56,11 @@ CREATE TABLE IF NOT EXISTS addresses (
 CREATE TABLE IF NOT EXISTS orders (
     id VARCHAR(10) PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'confirmed', 'shipped', 'delivered', 'cancelled'
+    status VARCHAR(50) DEFAULT 'pending',
     total_amount DECIMAL(10, 2) NOT NULL,
     address_id INTEGER REFERENCES addresses(id),
     delivery_address JSONB,
-    payment_method VARCHAR(50) DEFAULT 'online', -- 'online', 'cod'
+    payment_method VARCHAR(50) DEFAULT 'online',
     payment_status VARCHAR(50) DEFAULT 'pending',
     razorpay_order_id VARCHAR(255),
     razorpay_payment_id VARCHAR(255),

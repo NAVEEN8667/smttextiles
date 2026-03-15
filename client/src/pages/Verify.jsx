@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
 
 export default function Verify() {
   const location = useLocation();
@@ -10,12 +9,11 @@ export default function Verify() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/verify-otp', { email, otp });
+      await axios.post('/auth/verify-otp', { email, otp });
       setSuccess('Account activated successfully!');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {

@@ -17,7 +17,7 @@ export default function Products() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/products');
+        const res = await axios.get('/products');
         setProducts(res.data);
         setFilteredProducts(res.data);
       } catch (err) {
@@ -61,7 +61,7 @@ export default function Products() {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5000/api/orders/cart',
+        '/orders/cart',
         { productId: product.id, quantity: 1 },
         { headers: { 'x-auth-token': token } }
       );

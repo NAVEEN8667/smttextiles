@@ -33,13 +33,13 @@ export default function AdminDashboard() {
       const token = localStorage.getItem('token');
 
 
-      const res = await axios.get('http://localhost:5000/api/products/admin', {
+      const res = await axios.get('/products/admin', {
         headers: { 'x-auth-token': token }
       });
 
 
 
-      const invRes = await axios.get('http://localhost:5000/api/inventory', {
+      const invRes = await axios.get('/inventory', {
         headers: { 'x-auth-token': token }
       });
 
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
   const toggleVisibility = async (id, currentStatus) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/products/${id}`,
+      await axios.put(`/products/${id}`,
         { is_active: !currentStatus },
         { headers: { 'x-auth-token': token } }
       );
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
   const updateStock = async (id, newQuantity) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/inventory/${id}`,
+      await axios.put(`/inventory/${id}`,
         { quantity: newQuantity },
         { headers: { 'x-auth-token': token } }
       );
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
         reviews_count: parseInt(newProduct.reviews_count) || 0
       };
 
-      await axios.post('http://localhost:5000/api/products', payload, {
+      await axios.post('/products', payload, {
         headers: { 'x-auth-token': token }
       });
       alert('Product added successfully');
@@ -129,7 +129,7 @@ export default function AdminDashboard() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/orders/admin', {
+      const res = await axios.get('/orders/admin', {
         headers: { 'x-auth-token': token }
       });
       setOrders(res.data);
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/orders/${orderId}/status`,
+      await axios.put(`/orders/${orderId}/status`,
         { status: newStatus },
         { headers: { 'x-auth-token': token } }
       );
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
   const fetchOrderDetails = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/orders/${id}`, {
+      const res = await axios.get(`/orders/${id}`, {
         headers: { 'x-auth-token': token }
       });
       setSelectedOrder(res.data);

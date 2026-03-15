@@ -17,7 +17,7 @@ export const CartProvider = ({ children }) => {
     }
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/orders/cart', {
+      const res = await axios.get('/orders/cart', {
         headers: { 'x-auth-token': token }
       });
 

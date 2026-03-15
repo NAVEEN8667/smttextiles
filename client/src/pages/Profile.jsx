@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL as API } from '../api';
 import {
   UserIcon,
   EnvelopeIcon,
@@ -11,8 +12,6 @@ import {
   CheckIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-
-const API = 'http://localhost:5000/api';
 
 export default function Profile() {
   const { user, updateUser, logout } = useAuth();

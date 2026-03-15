@@ -4,9 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prestart": "node init_db.js",
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "db:init": "node init_db.js",
+    "db:check-schema": "node check_schema.js",
+    "db:test": "node test_db.js",
+    "migrate:v2": "node migrate_v2.js",
+    "migrate:enhancements": "node migrate_enhancements.js",
+    "migrate:new-modules": "node migrate_new_modules.js",
+    "migrate:order-id": "node migrate_order_id.js",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": "20.x"
   },
   "keywords": [],
   "author": "",
@@ -15,13 +26,13 @@
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.0",
     "nodemon": "^3.1.11",
     "pdfkit": "^0.18.0",
-    "pg": "^8.18.0",
+    "pg": "^8.20.0",
     "razorpay": "^2.9.6"
   }
 }

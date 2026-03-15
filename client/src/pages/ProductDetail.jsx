@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { API_BASE_URL as API } from '../api';
 import {
   StarIcon,
   ShoppingBagIcon,
@@ -13,8 +14,6 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
-
-const API = 'http://localhost:5000/api';
 
 export default function ProductDetail() {
   const { id } = useParams();

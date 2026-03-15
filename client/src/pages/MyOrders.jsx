@@ -13,7 +13,7 @@ export default function MyOrders() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:5000/api/orders/my-orders', {
+      const res = await axios.get('/orders/my-orders', {
         headers: { 'x-auth-token': token }
       });
       setOrders(res.data);
@@ -40,7 +40,7 @@ export default function MyOrders() {
   const fetchOrderDetails = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:5000/api/orders/${id}`, {
+      const res = await axios.get(`/orders/${id}`, {
         headers: { 'x-auth-token': token }
       });
       setSelectedOrder(res.data);
@@ -54,7 +54,7 @@ export default function MyOrders() {
     setCancellingId(id);
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/orders/${id}/cancel`, {}, {
+      await axios.put(`/orders/${id}/cancel`, {}, {
         headers: { 'x-auth-token': token }
       });
       await fetchOrders();

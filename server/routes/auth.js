@@ -57,7 +57,9 @@ router.post('/register', async (req, res) => {
 
     const emailSent = await sendOTP(email, otp);
     if (!emailSent) {
-      return res.status(500).json({ message: 'Error sending OTP email' });
+      return res.status(503).json({
+        message: 'Email service is not configured. Set EMAIL_USER and EMAIL_PASS in backend environment variables.'
+      });
     }
 
     res.json({ message: 'OTP sent to your email. Please verify.' });

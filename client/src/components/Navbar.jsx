@@ -21,7 +21,7 @@ export default function Navbar() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/products');
+        const res = await axios.get('/products');
         const uniqueCategories = [...new Set(
           res.data
             .map((product) => (product.category || '').trim())

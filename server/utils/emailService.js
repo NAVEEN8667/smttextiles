@@ -16,6 +16,11 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendOTP = async (email, otp) => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('EMAIL_USER or EMAIL_PASS is not configured');
+    return false;
+  }
+
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,

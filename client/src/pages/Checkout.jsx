@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { API_BASE_URL as API } from '../api';
 import {
   MapPinIcon,
   PlusIcon,
@@ -12,8 +13,6 @@ import {
   XMarkIcon,
   BoltIcon,
 } from '@heroicons/react/24/outline';
-
-const API = 'http://localhost:5000/api';
 
 const emptyForm = {
   label: 'Home',

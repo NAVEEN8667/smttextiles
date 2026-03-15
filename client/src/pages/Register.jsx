@@ -22,7 +22,7 @@ export default function Register() {
 
     try {
       const { confirmPassword, ...dataToSend } = formData;
-      await axios.post('http://localhost:5000/api/auth/register', dataToSend);
+      await axios.post('/auth/register', dataToSend);
       navigate('/verify', { state: { email: formData.email } });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');

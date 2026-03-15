@@ -11,7 +11,7 @@ export default function Home() {
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await axios.get('http://localhost:5000/api/products/recommendations', { headers });
+        const res = await axios.get('/products/recommendations', { headers });
         setRecommendations(res.data);
       } catch (err) {
         console.error('Failed to fetch recommendations', err);
