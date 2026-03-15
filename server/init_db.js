@@ -6,6 +6,20 @@ const path = require('path');
 
 const connectionString = process.env.DATABASE_URL;
 
+const hasLocalDbConfig =
+  process.env.DB_USER &&
+  process.env.DB_PASSWORD &&
+  process.env.DB_HOST &&
+  process.env.DB_PORT &&
+  process.env.DB_NAME;
+
+if (!connectionString && !hasLocalDbConfig) {
+  console.error(
+    'Database configuration missing. Set DATABASE_URL for cloud deployments or DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME for local deployments.'
+  );
+  process.exit(1);
+}
+
 const createPool = (database) => {
   if (connectionString) {
     return new Pool({
