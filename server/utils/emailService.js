@@ -1,9 +1,10 @@
 require('dotenv').config();
 
-const hasResendConfig = Boolean(process.env.RESEND_API_KEY);
+const hasBrevoConfig = Boolean(process.env.BREVO_API_KEY);
 
-async function sendViaResend({ to, subject, text, html, attachments }) {
+async function sendViaBrevo({ to, subject, text, html, attachments }) {
   const fromEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+  const senderName = process.env.BREVO_SENDER_NAME || 'SM Textiles';
 
   if (!fromEmail) {
     return {
@@ -12,38 +13,39 @@ async function sendViaResend({ to, subject, text, html, attachments }) {
     };
   }
 
-  const resendPayload = {
-    from: fromEmail,
-    to: [to],
+  const brevoPayload = {
+    sender: {
+      name: senderName,
+      email: fromEmail,
+    },
+    to: [{ email: to }],
     subject,
-    text,
-    html,
+    textContent: text,
+    htmlContent: html,
   };
 
   if (attachments && attachments.length > 0) {
-    resendPayload.attachments = attachments.map((item) => ({
-      filename: item.filename,
+    brevoPayload.attachment = attachments.map((item) => ({
+      name: item.filename,
       content: Buffer.isBuffer(item.content) ? item.content.toString('base64') : item.content,
-      type: item.contentType,
-      disposition: 'attachment',
     }));
   }
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'api-key': process.env.BREVO_API_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(resendPayload),
+      body: JSON.stringify(brevoPayload),
     });
 
     if (!response.ok) {
       const body = await response.text();
       return {
         ok: false,
-        error: `Resend API error (${response.status}): ${body}`,
+        error: `Brevo API error (${response.status}): ${body}`,
       };
     }
 
@@ -51,13 +53,13 @@ async function sendViaResend({ to, subject, text, html, attachments }) {
   } catch (err) {
     return {
       ok: false,
-      error: err.message || 'Resend API request failed',
+      error: err.message || 'Brevo API request failed',
     };
   }
 }
 
 async function sendEmail(mailOptions) {
-  return sendViaResend({
+  return sendViaBrevo({
     to: mailOptions.to,
     subject: mailOptions.subject,
     text: mailOptions.text,
@@ -67,11 +69,11 @@ async function sendEmail(mailOptions) {
 }
 
 const sendOTP = async (email, otp) => {
-  if (!hasResendConfig) {
-    console.error('RESEND_API_KEY is not configured');
+  if (!hasBrevoConfig) {
+    console.error('BREVO_API_KEY is not configured');
     return {
       ok: false,
-      error: 'Missing RESEND_API_KEY environment variable',
+      error: 'Missing BREVO_API_KEY environment variable',
     };
   }
 
@@ -96,7 +98,7 @@ const sendOTP = async (email, otp) => {
       console.error(`Error sending OTP email to ${email}: ${result.error}`);
       return result;
     }
-    console.log(`OTP email sent successfully to ${email} via resend`);
+    console.log(`OTP email sent successfully to ${email} via brevo`);
     return { ok: true };
   } catch (error) {
     console.error('Unexpected error sending OTP email:', error.message);
@@ -138,7 +140,7 @@ const sendInvoiceEmail = async (email, pdfBuffer, orderId) => {
       console.error(`Invoice email failed for ${email}: ${result.error}`);
       return false;
     }
-    console.log(`Invoice email sent to ${email} for order ${orderId} via resend`);
+    console.log(`Invoice email sent to ${email} for order ${orderId} via brevo`);
     return true;
   } catch (error) {
     console.error('Error sending invoice email:', error);
@@ -173,7 +175,7 @@ const sendOrderStatusEmail = async (email, order) => {
       console.error(`Order status email failed for ${email}: ${result.error}`);
       return false;
     }
-    console.log(`Order status email sent to ${email} for order ${order.id} (Status: ${order.status}) via resend`);
+    console.log(`Order status email sent to ${email} for order ${order.id} (Status: ${order.status}) via brevo`);
     return true;
   } catch (error) {
     console.error('Error sending order status email:', error);

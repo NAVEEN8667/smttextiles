@@ -7,8 +7,8 @@ const pool = require('./db');
 const requiredEnv = ['DATABASE_URL', 'JWT_SECRET'];
 const missingEnv = requiredEnv.filter((name) => !process.env[name]);
 
-if (!process.env.RESEND_API_KEY) {
-  missingEnv.push('RESEND_API_KEY');
+if (!process.env.BREVO_API_KEY) {
+  missingEnv.push('BREVO_API_KEY');
 }
 
 if (!process.env.EMAIL_FROM && !process.env.EMAIL_USER) {
