@@ -2,23 +2,24 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false
-  },
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
   family: 4,
 });
 
 const sendOTP = async (email, otp) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.error('EMAIL_USER or EMAIL_PASS is not configured');
-    return false;
+    return {
+      ok: false,
+      error: 'Missing EMAIL_USER or EMAIL_PASS environment variable',
+    };
   }
 
   const mailOptions = {
@@ -39,10 +40,19 @@ const sendOTP = async (email, otp) => {
   try {
     await transporter.sendMail(mailOptions);
     console.log(`OTP sent to ${email}`);
-    return true;
+    return { ok: true };
   } catch (error) {
-    console.error('Error sending email:', error);
-    return false;
+    console.error('Error sending OTP email:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+      responseCode: error.responseCode,
+    });
+    return {
+      ok: false,
+      error: error.message || 'Failed to send OTP email',
+    };
   }
 };
 

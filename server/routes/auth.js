@@ -55,10 +55,10 @@ router.post('/register', async (req, res) => {
     }
 
 
-    const emailSent = await sendOTP(email, otp);
-    if (!emailSent) {
+    const otpResult = await sendOTP(email, otp);
+    if (!otpResult.ok) {
       return res.status(503).json({
-        message: 'Email service is not configured. Set EMAIL_USER and EMAIL_PASS in backend environment variables.'
+        message: otpResult.error || 'OTP email service is unavailable. Please try again.'
       });
     }
 
