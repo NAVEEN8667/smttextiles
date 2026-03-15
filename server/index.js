@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
+const pool = require('./db');
 
 const configuredOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || '')
   .split(',')
@@ -41,6 +42,25 @@ app.use('/api/contact', require('./routes/contact'));
 app.get('/', (req, res) => {
   res.send('Textile E-commerce API is running');
 });
+
+let hasLoggedDbReady = false;
+const retryIntervalMs = Number(process.env.DB_RETRY_MS || 5000);
+
+async function checkDbConnection() {
+  try {
+    await pool.query('SELECT 1');
+    if (!hasLoggedDbReady) {
+      console.log('Database connection established.');
+      hasLoggedDbReady = true;
+    }
+  } catch (err) {
+    hasLoggedDbReady = false;
+    console.error(`Database unavailable, retrying in ${retryIntervalMs}ms: ${err.message}`);
+  }
+}
+
+checkDbConnection();
+setInterval(checkDbConnection, retryIntervalMs);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
